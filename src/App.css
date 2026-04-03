@@ -34,7 +34,7 @@
   justify-content: center;
   min-height: 160px;
   border: 2px dashed var(--gx-border);
-  border-radius: 12px;
+  border-radius: var(--gx-radius-lg);
   padding: 1.5rem;
   text-align: center;
   cursor: pointer;
@@ -89,7 +89,7 @@
 .options-panel {
   background: var(--gx-bg-alt);
   border: 1px solid var(--gx-border);
-  border-radius: 12px;
+  border-radius: var(--gx-radius-lg);
   padding: 1.25rem 1.5rem;
   box-shadow: var(--gx-shadow);
 }
@@ -142,7 +142,7 @@
 .db-selector {
   background: var(--gx-bg-alt);
   border: 1px solid var(--gx-border);
-  border-radius: 12px;
+  border-radius: var(--gx-radius-lg);
   padding: 1.25rem 1.5rem;
   margin-bottom: 1.25rem;
   box-shadow: var(--gx-shadow);
@@ -250,7 +250,7 @@
   margin-bottom: 1.5rem;
   background: var(--gx-bg-alt);
   border: 1px solid var(--gx-border);
-  border-radius: 12px;
+  border-radius: var(--gx-radius-lg);
   padding: 1.25rem 1.5rem;
   box-shadow: var(--gx-shadow);
 }
@@ -297,7 +297,7 @@
 .results {
   background: var(--gx-bg-alt);
   border: 1px solid var(--gx-border);
-  border-radius: 12px;
+  border-radius: var(--gx-radius-lg);
   padding: 1.5rem;
   margin-bottom: 1.5rem;
   box-shadow: var(--gx-shadow);
@@ -395,7 +395,7 @@
 .about-page section {
   background: var(--gx-bg-alt);
   border: 1px solid var(--gx-border);
-  border-radius: 12px;
+  border-radius: var(--gx-radius-lg);
   padding: 1.75rem;
   margin-bottom: 1.5rem;
   box-shadow: var(--gx-shadow);
