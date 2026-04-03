@@ -211,7 +211,7 @@ async function uploadToR2(path, data, contentType) {
 
   // Use R2 via Cloudflare API directly
   const r = await fetch(
-    `https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/r2/buckets/static-genomicx/objects/${path}`,
+    `https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/r2/buckets/static/objects/${path}`,
     {
       method: 'PUT',
       headers: {
