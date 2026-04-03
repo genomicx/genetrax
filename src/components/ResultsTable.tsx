@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import { StatusBadge } from '@genomicx/ui'
 import { saveAs } from 'file-saver'
 import type { GenetraxResult, GenetraxHit } from '../genetrax/types'
 
@@ -92,8 +93,8 @@ export function ResultsTable({ result }: ResultsTableProps) {
     saveAs(new Blob([json], { type: 'application/json' }), 'genetrax_results.json')
   }
 
-  const pctColor = (v: number) =>
-    v >= 99 ? 'dist-close' : v >= 90 ? 'dist-medium' : 'dist-far'
+  const pctVariant = (v: number): 'success' | 'warning' | 'error' =>
+    v >= 99 ? 'success' : v >= 90 ? 'warning' : 'error'
 
   return (
     <section className="results">
@@ -155,14 +156,14 @@ export function ResultsTable({ result }: ResultsTableProps) {
                 <td className="mono" style={{ letterSpacing: '0.05em' }}>{hit.coverage}</td>
                 <td className="mono">{hit.gaps}</td>
                 <td>
-                  <span className={`distance-badge ${pctColor(hit.pctCoverage)}`}>
+                  <StatusBadge variant={pctVariant(hit.pctCoverage)}>
                     {hit.pctCoverage}%
-                  </span>
+                  </StatusBadge>
                 </td>
                 <td>
-                  <span className={`distance-badge ${pctColor(hit.pctIdentity)}`}>
+                  <StatusBadge variant={pctVariant(hit.pctIdentity)}>
                     {hit.pctIdentity}%
-                  </span>
+                  </StatusBadge>
                 </td>
                 <td className="mono">{hit.database}</td>
                 <td className="mono">{hit.accession}</td>
