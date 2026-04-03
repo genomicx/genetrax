@@ -26,65 +26,6 @@
   .controls-row { grid-template-columns: 1fr; }
 }
 
-/* ── File upload ─────────────────────────────── */
-.file-upload-area {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 160px;
-  border: 2px dashed var(--gx-border);
-  border-radius: var(--gx-radius-lg);
-  padding: 1.5rem;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.25s;
-  background: var(--gx-bg-alt);
-  box-shadow: var(--gx-shadow);
-}
-
-.file-upload-area:hover {
-  border-color: var(--gx-accent);
-  background: var(--gx-accent-dim);
-  box-shadow: var(--gx-shadow-md);
-  transform: translateY(-1px);
-}
-
-.file-upload-area input[type='file'] { display: none; }
-
-.file-upload-icon {
-  width: 36px;
-  height: 36px;
-  margin-bottom: 0.6rem;
-  color: var(--gx-accent);
-  opacity: 0.8;
-}
-
-.file-upload-label { color: var(--gx-text); font-size: 0.9rem; line-height: 1.5; }
-.file-upload-hint { font-size: 0.8rem; color: var(--gx-text-muted); margin-top: 0.2rem; }
-
-.file-list {
-  list-style: none;
-  padding: 0;
-  margin: 0.6rem 0 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
-  justify-content: center;
-  max-height: 5rem;
-  overflow-y: auto;
-}
-
-.file-list li {
-  background: var(--gx-tag-bg);
-  border: 1px solid var(--gx-tag-border);
-  padding: 0.15rem 0.6rem;
-  border-radius: 20px;
-  font-size: 0.78rem;
-  font-family: var(--gx-font-mono);
-  color: var(--gx-tag-text);
-}
-
 /* ── Options panel ───────────────────────────── */
 .options-panel {
   background: var(--gx-bg-alt);
@@ -376,18 +317,6 @@
 
 .mono { font-family: var(--gx-font-mono); font-size: 0.82rem; }
 
-.distance-badge {
-  display: inline-block;
-  padding: 0.15rem 0.5rem;
-  border-radius: var(--gx-radius-pill);
-  font-family: var(--gx-font-mono);
-  font-size: 0.82rem;
-  font-weight: 600;
-}
-
-.dist-close  { background: rgba(22,163,74,0.15);  color: var(--gx-success); }
-.dist-medium { background: rgba(245,158,11,0.15); color: var(--gx-warning); }
-.dist-far    { background: rgba(239,68,68,0.12);  color: var(--gx-error); }
 
 /* ── About page ──────────────────────────────── */
 .about-page { max-width: 700px; }

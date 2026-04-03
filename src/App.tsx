@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Routes, Route } from 'react-router-dom'
-import { NavBar, AppFooter, LogConsole } from '@genomicx/ui'
-import { FileUpload } from './components/FileUpload'
+import { NavBar, AppFooter, LogConsole, FileUpload } from '@genomicx/ui'
 import { DatabaseSelector } from './components/DatabaseSelector'
 import { ResultsTable } from './components/ResultsTable'
 import { OptionsPanel } from './components/OptionsPanel'
@@ -61,6 +60,10 @@ function AnalysisPage() {
         <FileUpload
           files={queryFiles}
           onFilesChange={setQueryFiles}
+          accept=".fasta,.fa,.fna,.fsa,.fasta.gz,.fa.gz,.fna.gz"
+          multiple={true}
+          label="Drop genome assemblies or click to browse"
+          hint=".fasta, .fa, .fna, .fsa (optionally .gz)"
           disabled={running}
         />
         <OptionsPanel
