@@ -111,7 +111,7 @@ export function About() {
           </section>
         </div>
       </main>
-      <AppFooter appName="GENETRAX" />
+      <AppFooter appName="GENETRAX" bugReportUrl="https://github.com/genomicx/genetrax/issues" />
     </>
   )
 }
