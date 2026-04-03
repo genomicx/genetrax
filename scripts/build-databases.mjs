@@ -143,6 +143,7 @@ async function runFormatdb(fastaText, dbName) {
   })
 
   mod.FS.writeFile('/input.fa', fastaText)
+  try { mod.FS.mkdir('/db') } catch {}
   const args = ['-i', '/input.fa', '-n', `/db/${dbName}`, '-p', 'F', '-o', 'T']
   console.log(`  $ formatdb ${args.join(' ')}`)
   try { mod.callMain(args) } catch {}
@@ -261,42 +262,38 @@ async function buildNcbi() {
     fetchText('https://ftp.ncbi.nlm.nih.gov/pathogen/Antimicrobial_resistance/AMRFinderPlus/database/latest/ReferenceGeneCatalog.txt'),
   ])
 
-  // Parse catalog: columns include gene_symbol, subclass, element_type etc.
+  // Build resistance lookup from catalog (gene_family → subclass)
   const catalogLines = catalogText.split('\n').filter(l => l && !l.startsWith('#'))
   const header = catalogLines[0].split('\t')
-  const geneSymIdx = header.indexOf('gene_symbol')
+  const geneSymIdx = header.indexOf('gene_symbol') >= 0 ? header.indexOf('gene_symbol') : header.indexOf('gene_family')
   const subclassIdx = header.indexOf('subclass')
   const scopeIdx = header.indexOf('scope')
-  const typeIdx = header.indexOf('element_type')
-  const subtypeIdx = header.indexOf('element_subtype')
-  const nucAccIdx = header.indexOf('refseq_nucleotide_accession')
+  const typeIdx = header.indexOf('element_type') >= 0 ? header.indexOf('element_type') : header.indexOf('type')
 
-  const catalog = new Map()
+  // Key catalog by gene_family for resistance class lookup
+  const resistanceByGene = new Map()
   for (const line of catalogLines.slice(1)) {
     const cols = line.split('\t')
-    if (!cols[nucAccIdx]) continue
     if (scopeIdx >= 0 && cols[scopeIdx] !== 'core') continue
     if (typeIdx >= 0 && cols[typeIdx] !== 'AMR') continue
-    catalog.set(cols[nucAccIdx], {
-      gene: cols[geneSymIdx] || '',
-      resistance: cols[subclassIdx] || '',
-    })
+    const gene = cols[geneSymIdx] || ''
+    const resistance = cols[subclassIdx] || ''
+    if (gene && !resistanceByGene.has(gene)) resistanceByGene.set(gene, resistance)
   }
 
   const parsed = parseFasta(fastaText)
-  console.log(`[NCBI] ${parsed.length} sequences, ${catalog.size} catalog entries`)
+  console.log(`[NCBI] ${parsed.length} sequences, ${resistanceByGene.size} catalog AMR entries`)
 
+  // FASTA header: >PROTEIN_ACC|NUC_ACC|FP|FN|GENE|GENE_FAMILY|PRODUCT description
   const formatted = []
   for (const s of parsed) {
-    // Header: >NG_ACCESSION|WP_PROTEIN|FP|FN|GENE|FAMILY|PRODUCT
     const parts = s.id.split('|')
-    const nucAcc = parts[0] || s.id
-    const cat = catalog.get(nucAcc)
-    if (!cat) continue
-    const gene = cat.gene || parts[4] || s.id
-    const resistance = cat.resistance.replace(/,/g, ';')
-    const id = `ncbi~~~${gene}~~~${nucAcc}~~~${resistance}`
-    const product = parts.slice(6).join(' ').trim() || s.desc
+    const protAcc = parts[0] || s.id
+    const gene = parts[4] || s.id
+    const geneFamily = parts[5] || gene
+    const resistance = (resistanceByGene.get(gene) || resistanceByGene.get(geneFamily) || '').replace(/,/g, ';')
+    const product = (s.desc || parts.slice(6).join(' ')).replace(/\s+[A-Z0-9.]+:\d+-\d+$/, '').trim()
+    const id = `ncbi~~~${gene}~~~${protAcc}~~~${resistance}`
     formatted.push({ id, desc: product, seq: s.seq })
   }
 
@@ -316,10 +313,10 @@ async function buildCard() {
 
   let cardJson
   try {
-    const out = execSync(`cd ${TMP} && tar xjf card.tar.bz2 card.json 2>/dev/null && cat card.json`)
-    cardJson = JSON.parse(out.toString())
-  } catch {
-    throw new Error('Failed to extract card.json from CARD tarball. Is bzip2 installed?')
+    execSync(`cd ${TMP} && tar xjf card.tar.bz2 ./card.json 2>/dev/null`, { stdio: 'pipe' })
+    cardJson = JSON.parse(readFileSync(join(TMP, 'card.json'), 'utf8'))
+  } catch (e) {
+    throw new Error(`Failed to extract card.json from CARD tarball. Is bzip2 installed? ${e.message}`)
   }
 
   const formatted = []

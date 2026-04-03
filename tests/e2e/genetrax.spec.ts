@@ -32,7 +32,7 @@ test.describe('GENETRAX e2e — AMR gene screening', () => {
   test('app title and subtitle are visible', async ({ page }) => {
     await page.goto('/')
 
-    await expect(page.getByText(/GENETRAX/i)).toBeVisible()
-    await expect(page.getByText(/AMR.*Virulence/i)).toBeVisible()
+    await expect(page.getByRole('heading', { name: /GENETRAX/i }).first()).toBeVisible()
+    await expect(page.locator('.gx-nav-logo-sub')).toContainText(/AMR.*Virulence/i)
   })
 })
