@@ -120,7 +120,19 @@ function App() {
 
   return (
     <div className="app">
-      <NavBar appName="GENETRAX" appSubtitle="AMR & Virulence Genotyping" version={APP_VERSION} />
+      <NavBar
+        appName="GENETRAX"
+        appSubtitle="AMR & Virulence Gene Screening"
+        version={APP_VERSION}
+        icon={
+          <svg className="gx-nav-logo-icon" viewBox="0 0 24 24" fill="none" stroke="var(--gx-accent)" strokeWidth="2">
+            {/* Shield with DNA strands - AMR resistance theme */}
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            <line x1="9" y1="10" x2="15" y2="10" />
+            <line x1="9" y1="14" x2="15" y2="14" />
+          </svg>
+        }
+      />
 
       <main className="app-main">
         <Routes>
@@ -129,7 +141,7 @@ function App() {
         </Routes>
       </main>
 
-      <AppFooter appName="GENETRAX" />
+      <AppFooter appName="GENETRAX" bugReportUrl="https://github.com/genomicx/genetrax/issues" />
     </div>
   )
 }
