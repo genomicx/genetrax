@@ -141,7 +141,7 @@ function App() {
         </Routes>
       </main>
 
-      <AppFooter appName="GENETRAX" bugReportUrl="https://github.com/genomicx/genetrax/issues" />
+      <AppFooter appName="GENETRAX" bugReportEmail="nabil@happykhan.com" bugReportUrl="https://github.com/genomicx/genetrax/issues" />
     </div>
   )
 }
