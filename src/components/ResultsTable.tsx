@@ -81,8 +81,8 @@ export function ResultsTable({ result }: ResultsTableProps) {
       [
         h.file, h.sequence, h.start, h.end, h.strand,
         h.gene, h.coverage, h.gaps, h.pctCoverage, h.pctIdentity,
-        h.database, h.accession, `"${h.product}"`, `"${h.resistance}"`,
-      ].join(','),
+        h.database, h.accession, h.product, h.resistance,
+      ].map(value => `"${String(value).replace(/"/g, '""')}"`).join(','),
     )
     const csv = `${header}\n${rows.join('\n')}\n`
     saveAs(new Blob([csv], { type: 'text/csv' }), 'genetrax_results.csv')

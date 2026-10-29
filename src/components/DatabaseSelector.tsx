@@ -31,7 +31,7 @@ export function DatabaseSelector({ value, onChange, disabled }: DatabaseSelector
           <button
             key={t}
             className={`db-mode-tab${tab === t ? ' active' : ''}`}
-            onClick={() => setTab(t)}
+            onClick={() => { if (t !== tab) { setTab(t); onChange(null) } }}
             disabled={disabled}
           >
             {t.charAt(0).toUpperCase() + t.slice(1)}
@@ -116,7 +116,7 @@ function CustomUpload({ value, onChange, disabled }: CustomUploadProps) {
   return (
     <div className="db-custom-upload">
       <p className="db-description" style={{ marginBottom: '0.75rem' }}>
-        Upload a custom BLAST database (tar.gz of .nhr/.nin/.nsq) and a gene metadata JSON file.
+        Upload a custom BLAST database (tar.gz of .nhr/.nin/.nsq, plus .nsi/.nsd when built with formatdb -o T) and a gene metadata JSON file.
         The JSON should map sequence IDs to <code>{`{gene, product, resistance, accession, length}`}</code>.
       </p>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>

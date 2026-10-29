@@ -1,0 +1,62 @@
+{
+  "ncbi": {
+    "upstreamVersion": "abricate repository snapshot e2064df7d193ad783d4c188d4ce79706faf9eb75",
+    "provenance": "Pinned reference FASTA distributed by abricate (GPL-2.0 repository); retain attribution to the original database authors. This identifies the exact packaged snapshot, not an independently verified upstream database release.",
+    "assets": {
+      "fasta": {
+        "url": "https://raw.githubusercontent.com/tseemann/abricate/e2064df7d193ad783d4c188d4ce79706faf9eb75/db/ncbi/sequences",
+        "sha256": "8ad5aa5610a6eb8a405aa900f1e4fce570ac0a6668674e20a79dbc35d91c0892"
+      }
+    }
+  },
+  "card": {
+    "upstreamVersion": "abricate repository snapshot e2064df7d193ad783d4c188d4ce79706faf9eb75",
+    "provenance": "Pinned reference FASTA distributed by abricate (GPL-2.0 repository); retain attribution to the original database authors. This identifies the exact packaged snapshot, not an independently verified upstream database release.",
+    "assets": {
+      "fasta": {
+        "url": "https://raw.githubusercontent.com/tseemann/abricate/e2064df7d193ad783d4c188d4ce79706faf9eb75/db/card/sequences",
+        "sha256": "24e5358f8fb3346ad098bc383a17ea7f215f5c52e32edae15a5a79c83e96c90e"
+      }
+    }
+  },
+  "resfinder": {
+    "upstreamVersion": "abricate repository snapshot e2064df7d193ad783d4c188d4ce79706faf9eb75",
+    "provenance": "Pinned reference FASTA distributed by abricate (GPL-2.0 repository); retain attribution to the original database authors. This identifies the exact packaged snapshot, not an independently verified upstream database release.",
+    "assets": {
+      "fasta": {
+        "url": "https://raw.githubusercontent.com/tseemann/abricate/e2064df7d193ad783d4c188d4ce79706faf9eb75/db/resfinder/sequences",
+        "sha256": "e0df4d10932cafa32df26f732574c5984f017fea54cc0b552bd65cc6c815de05"
+      }
+    }
+  },
+  "megares": {
+    "upstreamVersion": "abricate repository snapshot e2064df7d193ad783d4c188d4ce79706faf9eb75",
+    "provenance": "Pinned reference FASTA distributed by abricate (GPL-2.0 repository); retain attribution to the original database authors. This identifies the exact packaged snapshot, not an independently verified upstream database release.",
+    "assets": {
+      "fasta": {
+        "url": "https://raw.githubusercontent.com/tseemann/abricate/e2064df7d193ad783d4c188d4ce79706faf9eb75/db/megares/sequences",
+        "sha256": "9fcb61799ddf6c4c7067a36d0f5e94c7b3df5e9b2ffa48f55c9d73512824b762"
+      }
+    }
+  },
+  "plasmidfinder": {
+    "upstreamVersion": "abricate repository snapshot e2064df7d193ad783d4c188d4ce79706faf9eb75",
+    "provenance": "Pinned reference FASTA distributed by abricate (GPL-2.0 repository); retain attribution to the original database authors. This identifies the exact packaged snapshot, not an independently verified upstream database release.",
+    "assets": {
+      "fasta": {
+        "url": "https://raw.githubusercontent.com/tseemann/abricate/e2064df7d193ad783d4c188d4ce79706faf9eb75/db/plasmidfinder/sequences",
+        "sha256": "26aa1d7f36da3b193e4ca07358e532a259f4ac4568a810df8ea24afb4aae8f67"
+      }
+    }
+  },
+  "vfdb": {
+    "upstreamVersion": "abricate repository snapshot e2064df7d193ad783d4c188d4ce79706faf9eb75",
+    "provenance": "Pinned reference FASTA distributed by abricate (GPL-2.0 repository); retain attribution to the original database authors. This identifies the exact packaged snapshot, not an independently verified upstream database release.",
+    "assets": {
+      "fasta": {
+        "url": "https://raw.githubusercontent.com/tseemann/abricate/e2064df7d193ad783d4c188d4ce79706faf9eb75/db/vfdb/sequences",
+        "sha256": "e827dddb1841f7d31cd1bcf03dbfd45a0959648786ee70ae21a647475de15dce"
+      }
+    }
+  }
+}

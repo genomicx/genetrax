@@ -1,5 +1,6 @@
 import { NavBar, AppFooter } from '@genomicx/ui'
 import { APP_VERSION } from '../lib/version'
+import { PRESET_DATABASES } from '../genetrax/databases'
 
 export function About() {
   return (
@@ -12,7 +13,7 @@ export function About() {
             <p>
               Genetrax is a browser-based tool for screening bacterial genome assemblies against
               curated databases of antimicrobial resistance (AMR) genes and virulence factors.
-              It is designed to replicate the behaviour of{' '}
+              It uses reference snapshots distributed by{' '}
               <a href="https://github.com/tseemann/abricate" target="_blank" rel="noopener">abricate</a>{' '}
               by Torsten Seemann, running entirely in your browser via WebAssembly.
             </p>
@@ -28,6 +29,10 @@ export function About() {
 
           <section>
             <h2>Databases</h2>
+            <p>Reference files are pinned abricate snapshots, identified by content hash rather than unverified upstream release labels. Manifests record their source, sequence count and checksums.</p>
+            <p>{PRESET_DATABASES.map((database, index) => (
+              <span key={database.id}>{index > 0 && ' · '}<a href={database.manifestUrl} target="_blank" rel="noopener">{database.name} provenance</a></span>
+            ))}</p>
             <div className="about-db-entry">
               <h3>VFDB — Virulence Factor Database</h3>
               <p className="about-citation">
@@ -75,16 +80,16 @@ export function About() {
           <section>
             <h2>Methods</h2>
             <p>
-              Genetrax replicates <code>abricate</code> using legacy BLAST (blastall) compiled to WebAssembly.
+              Genetrax uses legacy BLAST (blastall) 2.2.26 compiled to WebAssembly.
               For each uploaded assembly, it runs:
             </p>
             <p style={{ fontFamily: 'var(--gx-font-mono)', fontSize: '0.85rem', background: 'var(--gx-bg-elevated)', padding: '0.75rem 1rem', borderRadius: '8px' }}>
-              blastall -p blastn -d [db] -i [query] -e 1E-20 -m 8 -F F -W 32
+              blastall -p blastn -d [db] -i [query] -e 1E-20 -m 7 -F F -W 32 -X 150
             </p>
             <p>
               Hits are filtered by minimum percent identity (<code>--minid</code>, default 80%) and minimum gene
-              coverage (<code>--mincov</code>, default 80%). Coverage is calculated as:
-              <code> (alignment_length - gaps) / gene_length × 100</code>.
+              coverage (<code>--mincov</code>, default 80%). Each BLAST alignment is reported separately; overlapping hits are not merged or suppressed. Coordinates are 1-based and inclusive. Thresholds use exact values before display rounding. Coverage is calculated as:
+              <code> (alignment_length - gap_residues) / gene_length × 100</code>.
             </p>
           </section>
 

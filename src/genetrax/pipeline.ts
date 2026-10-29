@@ -10,7 +10,9 @@
  */
 
 import type { GenetraxHit, GenetraxOptions, GenetraxResult, GeneMeta, DatabaseSource } from './types'
-import { fetchDatabase, fetchMeta } from './dbCache'
+import { fetchDatabase, fetchMeta, decodeMetadata } from './dbCache'
+import { parseBlastXml } from './blastXml'
+import { databasePrefix, readQueryFasta } from './validation'
 
 const WASM_BASE = 'https://static.genomicx.org/wasm'
 
@@ -24,7 +26,7 @@ interface BlastModule {
     readFile: (path: string) => Uint8Array
     mkdir: (path: string) => void
   }
-  callMain: (args: string[]) => void
+  callMain: (args: string[]) => number | undefined
   _stdout: string[]
   _stderr: string[]
 }
@@ -71,21 +73,8 @@ type LogCallback = (msg: string) => void
  * Supports only POSIX ustar format (files, no symlinks, max 100-char names).
  */
 async function unpackTarGz(buffer: ArrayBuffer): Promise<Map<string, Uint8Array>> {
-  const ds = new DecompressionStream('gzip')
-  const writer = ds.writable.getWriter()
-  writer.write(new Uint8Array(buffer))
-  writer.close()
-  const chunks: Uint8Array[] = []
-  const reader = ds.readable.getReader()
-  while (true) {
-    const { done, value } = await reader.read()
-    if (done) break
-    chunks.push(value)
-  }
-  const totalLen = chunks.reduce((s, c) => s + c.byteLength, 0)
-  const tar = new Uint8Array(totalLen)
-  let offset = 0
-  for (const c of chunks) { tar.set(c, offset); offset += c.byteLength }
+  const stream = new Blob([buffer]).stream().pipeThrough(new DecompressionStream('gzip'))
+  const tar = new Uint8Array(await new Response(stream).arrayBuffer())
 
   const files = new Map<string, Uint8Array>()
   let pos = 0
@@ -95,30 +84,19 @@ async function unpackTarGz(buffer: ArrayBuffer): Promise<Map<string, Uint8Array>
     if (!name) break
     const sizeStr = new TextDecoder().decode(header.slice(124, 136)).replace(/\0/g, '').trim()
     const size = parseInt(sizeStr, 8)
+    if (!Number.isSafeInteger(size) || size < 0 || pos + 512 + size > tar.byteLength) {
+      throw new Error('Database tar archive is truncated or invalid')
+    }
     const typeFlag = String.fromCharCode(header[156])
     pos += 512
     if (typeFlag === '0' || typeFlag === '' || typeFlag === '\0') {
       const basename = name.split('/').pop() ?? name
+      if (files.has(basename)) throw new Error(`Database archive contains duplicate file ${basename}`)
       files.set(basename, tar.slice(pos, pos + size))
     }
     pos += Math.ceil(size / 512) * 512
   }
   return files
-}
-
-/**
- * Build a coverage map string like abricate: 15 chars, '=' for covered, '.' for gap.
- */
-function makeCoverageMap(sstart: number, send: number, slen: number): string {
-  const WIDTH = 15
-  const map = Array(WIDTH).fill('.')
-  const lo = Math.min(sstart, send) - 1
-  const hi = Math.max(sstart, send)
-  for (let i = 0; i < WIDTH; i++) {
-    const pos = Math.floor((i / WIDTH) * slen)
-    if (pos >= lo && pos < hi) map[i] = '='
-  }
-  return map.join('')
 }
 
 /**
@@ -133,6 +111,8 @@ export async function runGenetrax(
 ): Promise<GenetraxResult> {
   if (queryFiles.length === 0) throw new Error('At least one query file is required')
 
+  const queryData = await Promise.all(queryFiles.map(readQueryFasta))
+
   // ── Step 1: Load BLAST WASM ────────────────────────────────────────────
   onProgress('Loading BLAST (WebAssembly)...', 2)
   onLog('[Genetrax] Fetching blastall WASM from static.genomicx.org...')
@@ -143,37 +123,34 @@ export async function runGenetrax(
   let dbFiles: Map<string, Uint8Array>
   let metaMap: Map<string, GeneMeta>
   let dbName: string
-  let dbId: string
 
   if (dbSource.type === 'preset') {
     const cfg = dbSource.config
     dbName = `${cfg.name} ${cfg.version}`
-    dbId = cfg.id
 
     onProgress(`Fetching database: ${cfg.name}...`, 5)
     onLog(`[Genetrax] Fetching ${cfg.name} (${cfg.version})...`)
     const tarBuf = await fetchDatabase(cfg.dbUrl, (fraction) => {
       onProgress(`Downloading database... ${Math.round(fraction * 100)}%`, 5 + fraction * 25)
-    })
+    }, cfg.dbSha256)
     onLog(`[Genetrax] Unpacking database...`)
     dbFiles = await unpackTarGz(tarBuf)
     onLog(`[Genetrax] Database unpacked (${dbFiles.size} files).`)
 
     onProgress('Fetching gene metadata...', 32)
     onLog('[Genetrax] Fetching gene metadata...')
-    metaMap = await fetchMeta(cfg.metaUrl)
+    metaMap = await fetchMeta(cfg.metaUrl, cfg.metaSha256)
     onLog(`[Genetrax] Loaded metadata for ${metaMap.size} genes.`)
   } else {
     dbName = dbSource.file.name.replace(/\.tar\.gz$/, '')
-    dbId = dbName
     onProgress('Reading uploaded database...', 10)
     onLog(`[Genetrax] Reading user database: ${dbSource.file.name}`)
     dbFiles = await unpackTarGz(await dbSource.file.arrayBuffer())
     onLog(`[Genetrax] Fetching metadata: ${dbSource.metaFile.name}`)
-    const metaText = new TextDecoder().decode(await dbSource.metaFile.arrayBuffer())
-    const metaObj = JSON.parse(metaText) as Record<string, GeneMeta>
-    metaMap = new Map(Object.entries(metaObj))
+    metaMap = decodeMetadata(await dbSource.metaFile.arrayBuffer())
   }
+
+  databasePrefix(dbFiles)
 
   // ── Step 3: Run BLAST for each query file ──────────────────────────────
   const allHits: GenetraxHit[] = []
@@ -195,38 +172,35 @@ export async function runGenetrax(
     }
 
     // Write query FASTA
-    const queryBuf = await queryFile.arrayBuffer()
+    const queryBuf = queryData[fi]
     mod.FS.writeFile('/query.fa', new Uint8Array(queryBuf))
 
     // Run blastall
     const args = [
       '-p', 'blastn',
-      '-d', `/db/${dbId}`,
+      '-d', `/db/${databasePrefix(dbFiles)}`, 
       '-i', '/query.fa',
       '-e', options.evalue.toExponential(),
-      '-m', '8',
+      '-m', '7',
+      '-o', '/result.xml',
       '-F', 'F',   // no dust/seg filtering (equivalent to -dust no)
       '-W', '32',  // word size 32
       '-X', '150', // X dropoff
     ]
     onLog(`[Genetrax] $ blastall ${args.join(' ')}`)
 
+    let status: number | undefined
     try {
-      mod.callMain(args)
-    } catch {
-      // blastall calls exit() which throws in Emscripten
+      status = mod.callMain(args)
+    } catch (error) {
+      throw new Error(`BLAST execution failed: ${error instanceof Error ? error.message : String(error)}`)
     }
-
-    const stderrOut = mod._stderr.join('')
-    if (stderrOut.includes('ERROR') || stderrOut.includes('FATAL')) {
-      throw new Error(`blastall failed: ${stderrOut}`)
+    const stderrOut = mod._stderr.join('\n')
+    if ((status !== undefined && status !== 0) || /\b(error|fatal)\b/i.test(stderrOut)) {
+      throw new Error(`BLAST failed (exit ${status ?? 'unknown'}): ${stderrOut}`)
     }
-
-    const rawOut = mod._stdout.join('\n')
-    onLog(`[Genetrax] ${mod._stdout.length} BLAST hits for ${queryFile.name}.`)
-
-    // ── Parse and filter hits ──────────────────────────────────────────
-    const hits = parseBlastM8(rawOut, queryFile.name, dbName, dbId, metaMap, options)
+    const rawOut = new TextDecoder().decode(mod.FS.readFile('/result.xml'))
+    const hits = parseBlastXml(rawOut, queryFile.name, dbName, metaMap, options)
     onLog(`[Genetrax] ${hits.length} hits pass minid=${options.minid}% mincov=${options.mincov}%`)
     allHits.push(...hits)
 
@@ -246,77 +220,3 @@ export async function runGenetrax(
   }
 }
 
-/**
- * Parse blastall -m 8 tabular output into GenetraxHit[].
- *
- * Columns (standard 12-col tabular):
- *   qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore
- */
-function parseBlastM8(
-  stdout: string,
-  fileName: string,
-  dbName: string,
-  _dbId: string,
-  metaMap: Map<string, GeneMeta>,
-  options: GenetraxOptions,
-): GenetraxHit[] {
-  const hits: GenetraxHit[] = []
-
-  for (const line of stdout.split('\n')) {
-    const trimmed = line.trim()
-    if (!trimmed || trimmed.startsWith('#')) continue
-
-    const cols = trimmed.split('\t')
-    if (cols.length < 12) continue
-
-    const [qseqid, sseqid, pidentStr, lengthStr, , gapopenStr,
-           qstartStr, qendStr, sstartStr, sendStr] = cols
-
-    const pident = parseFloat(pidentStr)
-    const alnLen = parseInt(lengthStr, 10)
-    const gaps = parseInt(gapopenStr, 10)
-    const qstart = parseInt(qstartStr, 10)
-    const qend = parseInt(qendStr, 10)
-    const sstart = parseInt(sstartStr, 10)
-    const send = parseInt(sendStr, 10)
-
-    if (isNaN(pident) || isNaN(alnLen)) continue
-    if (pident < options.minid) continue
-
-    // Look up gene metadata
-    const meta = lookupMeta(sseqid, metaMap)
-    if (!meta) continue
-
-    // %COVERAGE = (alignment_length - gaps) / subject_length * 100
-    const pctCoverage = (100 * (alnLen - gaps)) / meta.length
-
-    if (pctCoverage < options.mincov) continue
-
-    const strand = sstart <= send ? '+' : '-'
-    const coverageMap = makeCoverageMap(sstart, send, meta.length)
-
-    hits.push({
-      file: fileName,
-      sequence: qseqid,
-      start: Math.min(qstart, qend),
-      end: Math.max(qstart, qend),
-      strand,
-      gene: meta.gene,
-      coverage: coverageMap,
-      gaps,
-      pctCoverage: Math.round(pctCoverage * 10) / 10,
-      pctIdentity: Math.round(pident * 10) / 10,
-      database: dbName,
-      accession: meta.accession,
-      product: meta.product,
-      resistance: meta.resistance,
-    })
-  }
-
-  return hits
-}
-
-function lookupMeta(sseqid: string, metaMap: Map<string, GeneMeta>): GeneMeta | undefined {
-  // Try direct lookup first, then strip version suffix (e.g. "~~~gene~~~acc.1" → parts)
-  return metaMap.get(sseqid) ?? metaMap.get(sseqid.split('~~~')[1] ?? '') ?? metaMap.get(sseqid.split('|')[1] ?? '')
-}
