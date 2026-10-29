@@ -178,7 +178,7 @@ export async function runGenetrax(
     // Run blastall
     const args = [
       '-p', 'blastn',
-      '-d', `/db/${databasePrefix(dbFiles)}`, 
+      '-d', `/db/${databasePrefix(dbFiles)}`,
       '-i', '/query.fa',
       '-e', options.evalue.toExponential(),
       '-m', '7',
@@ -219,4 +219,3 @@ export async function runGenetrax(
     ranAt: new Date().toISOString(),
   }
 }
-
