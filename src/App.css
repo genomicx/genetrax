@@ -110,7 +110,7 @@
 
 .db-mode-tab:hover { color: var(--gx-text); border-color: var(--gx-accent); }
 .db-mode-tab.active { background: var(--gx-accent); border-color: var(--gx-accent); color: var(--gx-text-inverted); }
-.db-mode-tab:disabled { opacity: 0.5; cursor: not-allowed; }
+.db-mode-tab:disabled { background: var(--gx-disabled-bg); color: var(--gx-disabled-text); opacity: 1; cursor: not-allowed; }
 
 .db-list { display: flex; flex-direction: column; gap: 0.6rem; }
 .db-empty { color: var(--gx-text-muted); font-size: 0.875rem; font-style: italic; }
@@ -121,7 +121,7 @@
   gap: 0.75rem;
   padding: 0.9rem 1rem;
   border: 1.5px solid var(--gx-border);
-  border-radius: 10px;
+  border-radius: var(--gx-radius-lg);
   background: var(--gx-bg);
   cursor: pointer;
   transition: all 0.2s;
@@ -152,7 +152,7 @@
 .db-cached-badge {
   display: inline-flex; align-items: center; gap: 0.25rem;
   font-size: 0.72rem; font-weight: 600;
-  color: var(--gx-success); background: rgba(22,163,74,0.1); border: 1px solid rgba(22,163,74,0.25);
+  color: var(--gx-success); background: color-mix(in srgb, var(--gx-success) 10%, transparent); border: 1px solid color-mix(in srgb, var(--gx-success) 25%, transparent);
   padding: 0.1rem 0.45rem; border-radius: var(--gx-radius-pill);
 }
 
@@ -174,7 +174,7 @@
   background: var(--gx-accent);
   color: var(--gx-text-inverted);
   border: none;
-  border-radius: 8px;
+  border-radius: var(--gx-radius);
   font-family: inherit;
   font-size: 0.9375rem;
   font-weight: 600;
@@ -184,7 +184,7 @@
 }
 
 .run-button:hover:not(:disabled) { background: var(--gx-accent-hover); }
-.run-button:disabled { opacity: 0.5; cursor: not-allowed; }
+.run-button:disabled { background: var(--gx-disabled-bg); color: var(--gx-disabled-text); opacity: 1; cursor: not-allowed; }
 
 /* ── Progress ────────────────────────────────── */
 .progress {
@@ -198,9 +198,9 @@
 
 /* ── Error ───────────────────────────────────── */
 .error {
-  background: rgba(239,68,68,0.1);
-  border: 1px solid rgba(239,68,68,0.2);
-  border-radius: 10px;
+  background: color-mix(in srgb, var(--gx-error) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--gx-error) 20%, transparent);
+  border-radius: var(--gx-radius-lg);
   padding: 1rem 1.25rem;
   margin-bottom: 1.5rem;
 }
@@ -246,7 +246,7 @@
   background: var(--gx-bg-alt);
   color: var(--gx-accent);
   border: 1px solid var(--gx-accent);
-  border-radius: 8px;
+  border-radius: var(--gx-radius);
   font-family: inherit;
   font-size: 0.82rem;
   font-weight: 500;
@@ -258,7 +258,7 @@
 
 .results-table-container {
   overflow-x: auto;
-  border-radius: 8px;
+  border-radius: var(--gx-radius);
   border: 1px solid var(--gx-border);
 }
 
@@ -319,7 +319,7 @@
   color: var(--gx-accent); text-decoration: none;
   font-size: 0.85rem; font-weight: 500;
   padding: 0.3rem 0.8rem;
-  border: 1px solid var(--gx-border); border-radius: 20px;
+  border: 1px solid var(--gx-border); border-radius: var(--gx-radius-pill);
   background: var(--gx-bg-elevated); transition: all 0.2s;
 }
 .about-links a:hover { color: var(--gx-text-inverted); background: var(--gx-accent); border-color: var(--gx-accent); }
@@ -327,7 +327,7 @@
 .privacy-note {
   display: flex; align-items: flex-start; gap: 0.75rem;
   background: var(--gx-accent-dim); border: 1px solid var(--gx-tag-border);
-  border-radius: 10px; padding: 1rem 1.25rem; margin-top: 0.75rem;
+  border-radius: var(--gx-radius-lg); padding: 1rem 1.25rem; margin-top: 0.75rem;
 }
 
 .privacy-note svg { flex-shrink: 0; width: 20px; height: 20px; color: var(--gx-accent); margin-top: 0.1rem; }

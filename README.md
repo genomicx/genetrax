@@ -1,5 +1,7 @@
 # Genetrax
 
+[Open Genetrax](https://genetrax.genomicx.org)
+
 > Browser-based AMR and virulence genotyping — abricate-compatible, no server required.
 
 Genetrax screens bacterial genome assemblies against curated databases of antimicrobial resistance (AMR) genes and virulence factors, replicating the behaviour of [abricate](https://github.com/tseemann/abricate) entirely in your browser via WebAssembly. No data ever leaves your machine — all processing is done client-side using BLAST compiled to WebAssembly.
